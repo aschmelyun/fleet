@@ -17,11 +17,11 @@ class FleetStartCommand extends Command
         $process = Fleet::process('docker network ls --filter name=fleet --format {{.ID}}');
 
         if (!$process->getOutput()) {
-            $this->info('No fleet network, creating one...');
+            $this->info('No Fleet network, creating one...');
 
             $process = Fleet::process('docker network create fleet');
             if (!$process->isSuccessful()) {
-                $this->error('Could not start fleet Docker network');
+                $this->error('Could not start Fleet Docker network');
 
                 return self::FAILURE;
             }
@@ -33,7 +33,7 @@ class FleetStartCommand extends Command
         $process = Fleet::process('docker ps -a --filter name=fleet --format {{.ID}}');
 
         if (!$process->getOutput()) {
-            $this->info('No fleet container, spinning it up...');
+            $this->info('No Fleet container, spinning it up...');
             $process = Fleet::process(
                 'docker run -d -p 8080:8080 -p 80:80 --network=fleet -v /var/run/docker.sock:/var/run/docker.sock --name=fleet traefik:v2.9 --api.insecure=true --providers.docker',
                 true
