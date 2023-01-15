@@ -1,0 +1,5 @@
+<?php
+
+use Aschmelyun\Fleet\Tests\TestCase;
+
+uses(TestCase::class)->in(__DIR__);
