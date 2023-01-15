@@ -14,7 +14,7 @@ class FleetStartCommand extends Command
     public function handle(): int
     {
         // is the fleet docker network running? if not, start it up
-        $process = Fleet::process('docker network ls --filter name=fleet --format {{.ID}}');
+        $process = Fleet::process('docker network ls --filter name=^fleet$ --format {{.ID}}');
 
         if (!$process->getOutput()) {
             $this->info('No Fleet network, creating one...');
@@ -30,7 +30,7 @@ class FleetStartCommand extends Command
         }
 
         // is the fleet traefik container running? if not, start it up
-        $process = Fleet::process('docker ps -a --filter name=fleet --format {{.ID}}');
+        $process = Fleet::process('docker ps --filter name=^fleet$ --format {{.ID}}');
 
         if (!$process->getOutput()) {
             $this->info('No Fleet container, spinning it up...');
