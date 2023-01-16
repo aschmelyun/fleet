@@ -17,7 +17,7 @@ class FleetAddCommand extends Command
     {
         // set the domain to the one the user provided, or ask what it should be
         $domain = $this->argument('domain');
-        if (! $domain) {
+        if (!$domain) {
             $domain = $this->ask('What domain name would you like to use for this app?', 'laravel.localhost');
         }
 
@@ -27,13 +27,13 @@ class FleetAddCommand extends Command
         }
 
         // determine if laravel/sail is a required-dev package in the root composer file
-        if (! InstalledVersions::isInstalled('laravel/sail')) {
+        if (!InstalledVersions::isInstalled('laravel/sail')) {
             $this->error(' Laravel Sail is required for this package');
             $this->line(' For more information, check out https://laravel.com/docs/9.x/sail#installation');
         }
 
         // if the docker-compose.yml file isn't available, publish it
-        if (! file_exists(base_path('docker-compose.yml')) && ! file_exists(base_path('docker-compose.backup.yml'))) {
+        if (!file_exists(base_path('docker-compose.yml')) && !file_exists(base_path('docker-compose.backup.yml'))) {
             $this->info('No docker-compose.yml file available, running sail:install...');
             $this->call('sail:install');
         }
@@ -52,7 +52,7 @@ class FleetAddCommand extends Command
         }
 
         $file = base_path('.env');
-        if (! file_exists($file)) {
+        if (!file_exists($file)) {
             $this->error("Application .env file is missing, can't continue");
 
             return self::FAILURE;
@@ -62,7 +62,7 @@ class FleetAddCommand extends Command
         $env = explode("\n", $env);
 
         $filteredEnvAppPort = array_filter($env, fn ($line) => str_starts_with($line, 'APP_PORT'));
-        if (! empty($filteredEnvAppPort)) {
+        if (!empty($filteredEnvAppPort)) {
             $env[key($filteredEnvAppPort)] = "APP_PORT={$port}";
         } else {
             $insert = ["APP_PORT={$port}"];
@@ -73,11 +73,11 @@ class FleetAddCommand extends Command
 
         // add a modified docker-compose.yml file to include traefik labels
         $file = base_path('docker-compose.backup.yml');
-        if (! file_exists($file)) {
+        if (!file_exists($file)) {
             $file = base_path('docker-compose.yml');
         }
 
-        if (! file_exists($file)) {
+        if (!file_exists($file)) {
             $this->error('A docker-compose.yml file or a docker-compose.backup.yml file does not exist');
 
             return self::FAILURE;
@@ -95,7 +95,10 @@ class FleetAddCommand extends Command
         $yaml['services'][$heading]['networks'][] = 'fleet';
         $yaml['services'][$heading]['labels'] = [
             "traefik.http.routers.{$heading}.rule=Host(`{$domain}`)",
+            "traefik.http.services.{$heading}.loadbalancer.server.port=80",
         ];
+
+        unset($yaml['services'][$heading]['ports'][0]);
 
         $yaml['networks']['fleet']['external'] = true;
 
