@@ -87,8 +87,8 @@ class FleetAddCommand extends Command
 
         $heading = str_replace('.', '-', $domain);
 
-        $service = $yaml['services']['laravel.test'];
-        unset($yaml['services']['laravel.test']);
+        $service = $yaml['services'][array_keys($yaml['services'])[0]];
+        unset($yaml['services'][array_keys($yaml['services'])[0]]);
 
         $yaml['services'] = [$heading => $service, ...$yaml['services']];
 
