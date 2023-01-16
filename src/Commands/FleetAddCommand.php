@@ -99,6 +99,7 @@ class FleetAddCommand extends Command
         ];
 
         unset($yaml['services'][$heading]['ports'][0]);
+        $yaml['services'][$heading]['ports'] = array_values($yaml['services'][$heading]['ports']);
 
         $yaml['networks']['fleet']['external'] = true;
 
