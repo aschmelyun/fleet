@@ -12,7 +12,7 @@ Easily run multiple Laravel Sail applications at the same time locally with cust
 You can install the package via composer:
 
 ```bash
-composer require aschmelyun/fleet
+composer require aschmelyun/fleet --dev
 ```
 
 ## Getting Started
