@@ -29,7 +29,7 @@ class FleetAddCommand extends Command
         // determine if laravel/sail is a required-dev package in the root composer file
         if (!InstalledVersions::isInstalled('laravel/sail')) {
             $this->error(' Laravel Sail is required for this package');
-            $this->line(' For more information, check out https://laravel.com/docs/9.x/sail#installation');
+            $this->line(' For more information, check out https://laravel.com/docs/sail#installation');
         }
 
         // if the docker-compose.yml file isn't available, publish it
