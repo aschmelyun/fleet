@@ -50,6 +50,22 @@ class Filesystem
         file_put_contents(base_path('.env'), implode("\n", $env));
     }
 
+    public function removeFromEnvFile(string $key): void
+    {
+        $file = base_path('.env');
+        if (file_exists($file)) {
+            $env = explode("\n", file_get_contents($file));
+
+            foreach ($env as $index => $line) {
+                if (str_starts_with($line, $key)) {
+                    unset($env[$index]);
+                }
+            }
+
+            file_put_contents(base_path('.env'), implode("\n", $env));
+        }
+    }
+
     public function createCertificates(string $domain): void
     {
         $this->createSslDirectories();
