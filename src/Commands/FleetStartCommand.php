@@ -2,9 +2,9 @@
 
 namespace Aschmelyun\Fleet\Commands;
 
-use Aschmelyun\Fleet\Fleet;
+use Aschmelyun\Fleet\Support\Docker;
+use Aschmelyun\Fleet\Support\Filesystem;
 use Illuminate\Console\Command;
-use Symfony\Component\Process\Process;
 
 class FleetStartCommand extends Command
 {
@@ -12,40 +12,39 @@ class FleetStartCommand extends Command
 
     public $description = 'Starts up the Fleet network and Traefik container';
 
-    public function handle(): int
+    public function handle(Filesystem $filesystem, Docker $docker): int
     {
         // is the fleet docker network running? if not, start it up
-        $process = Fleet::process('docker network ls --filter name=^fleet$ --format {{.ID}}');
-
-        if (!$process->getOutput()) {
+        if (!$docker->getNetwork('fleet')) {
             $this->info('No Fleet network, creating one...');
 
-            $process = Fleet::process('docker network create fleet');
-            if (!$process->isSuccessful()) {
+            try {
+                $id = $docker->createNetwork('fleet');
+            } catch (\Exception $e) {
                 $this->error('Could not start Fleet Docker network');
+                $this->line($e->getMessage());
 
                 return self::FAILURE;
             }
 
-            $this->line($process->getOutput());
+            $this->line($id);
         }
 
         // just in case the mkcert directory doesn't exist, create it
-        Fleet::makeSslDirectories();
-
-        $homeDirectory = new Process(['sh', '-c', 'echo $HOME']);
-        $homeDirectory->run();
-        $homeDirectory = trim($homeDirectory->getOutput());
+        $filesystem->createSslDirectories();
 
         // is the fleet traefik container running? if not, start it up
-        $process = Fleet::process('docker ps --filter name=^fleet$ --format {{.ID}}');
-
-        if (!$process->getOutput()) {
+        if (!$docker->getContainer('fleet')) {
             $this->info('No Fleet container, spinning it up...');
-            $process = Fleet::process(
-                "docker run -d -p 8080:8080 -p 80:80 -p 443:443 --network=fleet -v /var/run/docker.sock:/var/run/docker.sock -v {$homeDirectory}/.config/mkcert:/etc/traefik --name=fleet traefik:v2.9 --api.insecure=true --providers.docker --entryPoints.web.address=:80 --entryPoints.websecure.address=:443 --providers.file.directory=/etc/traefik/conf --providers.file.watch=true",
-                true
-            );
+
+            try {
+                $docker->startFleetTraefikContainer();
+            } catch (\Exception $e) {
+                $this->error('Could not start Fleet Traefik container');
+                $this->line($e->getMessage());
+
+                return self::FAILURE;
+            }
         }
 
         return self::SUCCESS;

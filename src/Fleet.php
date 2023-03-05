@@ -22,10 +22,4 @@ class Fleet
 
         return $process;
     }
-
-    public static function makeSslDirectories(): void
-    {
-        self::process("mkdir -p ~/.config/mkcert/certs");
-        self::process("mkdir -p ~/.config/mkcert/conf");
-    }
 }
