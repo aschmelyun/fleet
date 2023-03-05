@@ -114,7 +114,8 @@ class FleetAddCommand extends Command
             $homeDirectory->run();
             $homeDirectory = trim($homeDirectory->getOutput());
 
-            $process = Fleet::process("mkdir -p {$homeDirectory}/.config/mkcert/certs");
+            Fleet::makeSslDirectories();
+
             $process = Fleet::process("mkcert -cert-file {$homeDirectory}/.config/mkcert/certs/{$domain}.crt -key-file {$homeDirectory}/.config/mkcert/certs/{$domain}.key {$domain}");
             if (!$process->isSuccessful()) {
                 $this->error('mkcert is not installed or configured incorrectly, please install it and try again');
@@ -122,6 +123,19 @@ class FleetAddCommand extends Command
 
                 return self::FAILURE;
             }
+
+            $sslFile = "{$homeDirectory}/.config/mkcert/conf/ssl.yml";
+            $ssl = [];
+            if (file_exists($sslFile)) {
+                $ssl = Yaml::parseFile($sslFile);
+            }
+
+            $ssl['tls']['certificates'][] = [
+                'certFile' => "/etc/traefik/certs/{$domain}.crt",
+                'keyFile' => "/etc/traefik/certs/{$domain}.key",
+            ];
+
+            file_put_contents($sslFile, Yaml::dump($ssl, 6));
 
             $yaml['services'][$heading]['labels'][] = "traefik.http.routers.{$heading}.tls=true";
         }

@@ -31,7 +31,7 @@ class FleetStartCommand extends Command
         }
 
         // just in case the mkcert directory doesn't exist, create it
-        $process = Fleet::process("mkdir -p ~/.config/mkcert");
+        Fleet::makeSslDirectories();
 
         $homeDirectory = new Process(['sh', '-c', 'echo $HOME']);
         $homeDirectory->run();
