@@ -2,7 +2,8 @@
 
 namespace Aschmelyun\Fleet\Commands;
 
-use Aschmelyun\Fleet\Fleet;
+use Aschmelyun\Fleet\Support\Docker;
+use Aschmelyun\Fleet\Support\Filesystem;
 use Illuminate\Console\Command;
 
 class FleetStartCommand extends Command
@@ -11,33 +12,39 @@ class FleetStartCommand extends Command
 
     public $description = 'Starts up the Fleet network and Traefik container';
 
-    public function handle(): int
+    public function handle(Filesystem $filesystem, Docker $docker): int
     {
         // is the fleet docker network running? if not, start it up
-        $process = Fleet::process('docker network ls --filter name=^fleet$ --format {{.ID}}');
-
-        if (!$process->getOutput()) {
+        if (! $docker->getNetwork('fleet')) {
             $this->info('No Fleet network, creating one...');
 
-            $process = Fleet::process('docker network create fleet');
-            if (!$process->isSuccessful()) {
+            try {
+                $id = $docker->createNetwork('fleet');
+            } catch (\Exception $e) {
                 $this->error('Could not start Fleet Docker network');
+                $this->line($e->getMessage());
 
                 return self::FAILURE;
             }
 
-            $this->line($process->getOutput());
+            $this->line($id);
         }
 
-        // is the fleet traefik container running? if not, start it up
-        $process = Fleet::process('docker ps --filter name=^fleet$ --format {{.ID}}');
+        // just in case the mkcert directory doesn't exist, create it
+        $filesystem->createSslDirectories();
 
-        if (!$process->getOutput()) {
+        // is the fleet traefik container running? if not, start it up
+        if (! $docker->getContainer('fleet')) {
             $this->info('No Fleet container, spinning it up...');
-            $process = Fleet::process(
-                'docker run -d -p 8080:8080 -p 80:80 --network=fleet -v /var/run/docker.sock:/var/run/docker.sock --name=fleet traefik:v2.9 --api.insecure=true --providers.docker',
-                true
-            );
+
+            try {
+                $docker->startFleetTraefikContainer();
+            } catch (\Exception $e) {
+                $this->error('Could not start Fleet Traefik container');
+                $this->line($e->getMessage());
+
+                return self::FAILURE;
+            }
         }
 
         return self::SUCCESS;
