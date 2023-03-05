@@ -39,6 +39,16 @@ And your site will be available at the domain you provided!
 
 > Note: If you chose a domain that doesn't end in `.localhost`, you will need to add an entry to your hosts file to direct traffic to 127.0.0.1
 
+## Local SSL
+
+Fleet supports local SSL on your custom domains through the power of [mkcert](https://mkcert.dev). After you've installed it on your machine, you can use the `--ssl` option when using the `fleet:add` command to enable it for your application.
+
+```bash
+php artisan fleet:add my-app.localhost --ssl
+```
+
+A local certificate will be generated and stored in `~/.config/mkcert/certs`. After spinning up your site with Sail, your specified domain will have https enabled.
+
 ## Additional Usage
 
 By default, whenever you use `fleet:add`, a Docker network and container are both started to handle the traffic from your local domain name(s).
