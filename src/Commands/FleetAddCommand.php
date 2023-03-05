@@ -5,11 +5,14 @@ namespace Aschmelyun\Fleet\Commands;
 use Aschmelyun\Fleet\Fleet;
 use Composer\InstalledVersions;
 use Illuminate\Console\Command;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 
 class FleetAddCommand extends Command
 {
-    public $signature = 'fleet:add {domain?}';
+    public $signature = 'fleet:add
+                        {domain? : The test domain to use}
+                        {--ssl : Include local SSL with mkcert}';
 
     public $description = 'Installs Fleet support onto the current application';
 
@@ -102,6 +105,26 @@ class FleetAddCommand extends Command
         $yaml['services'][$heading]['ports'] = array_values($yaml['services'][$heading]['ports']);
 
         $yaml['networks']['fleet']['external'] = true;
+
+        // determine if the user wants to use SSL and add support if so
+        if ($this->option('ssl')) {
+            $this->info(' 🔒 Adding SSL support...');
+
+            $homeDirectory = new Process(['sh', '-c', 'echo $HOME']);
+            $homeDirectory->run();
+            $homeDirectory = trim($homeDirectory->getOutput());
+
+            $process = Fleet::process("mkdir -p {$homeDirectory}/.config/mkcert/certs");
+            $process = Fleet::process("mkcert -cert-file {$homeDirectory}/.config/mkcert/certs/{$domain}.crt -key-file {$homeDirectory}/.config/mkcert/certs/{$domain}.key {$domain}");
+            if (!$process->isSuccessful()) {
+                $this->error('mkcert is not installed or configured incorrectly, please install it and try again');
+                $this->line('For more information, check out mkcert.dev');
+
+                return self::FAILURE;
+            }
+
+            $yaml['services'][$heading]['labels'][] = "traefik.http.routers.{$heading}.tls=true";
+        }
 
         file_put_contents(base_path('docker-compose.yml'), Yaml::dump($yaml, 6));
 
