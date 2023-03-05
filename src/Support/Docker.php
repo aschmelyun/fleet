@@ -28,6 +28,11 @@ class Docker
         throw new \Exception('Could not create Docker network');
     }
 
+    public function removeNetwork(string $name): void
+    {
+        Fleet::process("docker network rm {$name}");
+    }
+
     public function getContainer(string $name): ?string
     {
         $process = Fleet::process("docker ps --filter name=^{$name}$ --format '{{.ID}}'");
@@ -37,6 +42,16 @@ class Docker
         }
 
         return null;
+    }
+
+    public function removeContainers(string $network): void
+    {
+        $process = Fleet::process("docker ps -a --filter network={$network} --format {{.ID}}");
+
+        $ids = explode("\n", $process->getOutput());
+        foreach (array_filter($ids) as $id) {
+            Fleet::process("docker rm -f {$id}");
+        }
     }
 
     public function startFleetTraefikContainer(): void
