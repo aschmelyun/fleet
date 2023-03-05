@@ -2,23 +2,23 @@
 
 namespace Aschmelyun\Fleet\Support;
 
+use Aschmelyun\Fleet\Fleet;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
-use Aschmelyun\Fleet\Fleet;
 
 class Filesystem
 {
     public function makeDirectory(string $path): void
     {
-        if (!is_dir($path)) {
+        if (! is_dir($path)) {
             mkdir($path, 0755, true);
         }
     }
 
     public function createSslDirectories(): void
     {
-        $this->makeDirectory($this->getHomeDirectory() . '/.config/mkcert/certs');
-        $this->makeDirectory($this->getHomeDirectory() . '/.config/mkcert/conf');
+        $this->makeDirectory($this->getHomeDirectory().'/.config/mkcert/certs');
+        $this->makeDirectory($this->getHomeDirectory().'/.config/mkcert/conf');
     }
 
     public function getHomeDirectory(): string
@@ -32,7 +32,7 @@ class Filesystem
     public function writeToEnvFile(string $key, string $value): void
     {
         $file = base_path('.env');
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             throw new \Exception('Application .env file is missing, can\'t continue');
         }
 
@@ -40,7 +40,7 @@ class Filesystem
         $env = explode("\n", $env);
 
         $filteredEnvAppPort = array_filter($env, fn ($line) => str_starts_with($line, $key));
-        if (!empty($filteredEnvAppPort)) {
+        if (! empty($filteredEnvAppPort)) {
             $env[key($filteredEnvAppPort)] = "{$key}={$value}";
         } else {
             $insert = ["{$key}={$value}"];
@@ -54,15 +54,15 @@ class Filesystem
     {
         $this->createSslDirectories();
 
-        $process = Fleet::process("mkcert -install");
-        if (!$process->isSuccessful()) {
+        $process = Fleet::process('mkcert -install');
+        if (! $process->isSuccessful()) {
             throw new \Exception('mkcert is not installed or configured incorrectly, please install it and try again');
         }
 
         $process = Fleet::process(
             "mkcert -cert-file {$this->getHomeDirectory()}/.config/mkcert/certs/{$domain}.crt -key-file {$this->getHomeDirectory()}/.config/mkcert/certs/{$domain}.key {$domain}"
         );
-        if (!$process->isSuccessful()) {
+        if (! $process->isSuccessful()) {
             throw new \Exception('mkcert is not installed or configured incorrectly, please install it and try again');
         }
     }

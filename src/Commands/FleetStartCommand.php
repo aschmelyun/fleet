@@ -15,7 +15,7 @@ class FleetStartCommand extends Command
     public function handle(Filesystem $filesystem, Docker $docker): int
     {
         // is the fleet docker network running? if not, start it up
-        if (!$docker->getNetwork('fleet')) {
+        if (! $docker->getNetwork('fleet')) {
             $this->info('No Fleet network, creating one...');
 
             try {
@@ -34,7 +34,7 @@ class FleetStartCommand extends Command
         $filesystem->createSslDirectories();
 
         // is the fleet traefik container running? if not, start it up
-        if (!$docker->getContainer('fleet')) {
+        if (! $docker->getContainer('fleet')) {
             $this->info('No Fleet container, spinning it up...');
 
             try {

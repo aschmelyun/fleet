@@ -13,7 +13,7 @@ class FleetStopCommand extends Command
 
     public function handle(): int
     {
-        if (!$this->confirm('This will stop and remove all Sail instances running on the Fleet network, do you want to continue?')) {
+        if (! $this->confirm('This will stop and remove all Sail instances running on the Fleet network, do you want to continue?')) {
             return self::SUCCESS;
         }
 
@@ -25,7 +25,7 @@ class FleetStopCommand extends Command
             $this->line("Removing container {$id}");
 
             $process = Fleet::process("docker rm -f {$id}");
-            if (!$process->isSuccessful()) {
+            if (! $process->isSuccessful()) {
                 $this->error("Error removing container {$id}");
 
                 return self::FAILURE;

@@ -20,7 +20,7 @@ class FleetAddCommand extends Command
     {
         // set the domain to the one the user provided, or ask what it should be
         $domain = $this->argument('domain');
-        if (!$domain) {
+        if (! $domain) {
             $domain = $this->ask('What domain name would you like to use for this app?', 'laravel.localhost');
         }
 
@@ -30,13 +30,13 @@ class FleetAddCommand extends Command
         }
 
         // determine if laravel/sail is a required-dev package in the root composer file
-        if (!InstalledVersions::isInstalled('laravel/sail')) {
+        if (! InstalledVersions::isInstalled('laravel/sail')) {
             $this->error(' Laravel Sail is required for this package');
             $this->line(' For more information, check out https://laravel.com/docs/sail#installation');
         }
 
         // if the docker-compose.yml file isn't available, publish it
-        if (!file_exists(base_path('docker-compose.yml')) && !file_exists(base_path('docker-compose.backup.yml'))) {
+        if (! file_exists(base_path('docker-compose.yml')) && ! file_exists(base_path('docker-compose.backup.yml'))) {
             $this->info('No docker-compose.yml file available, running sail:install...');
             $this->call('sail:install');
         }
@@ -58,16 +58,17 @@ class FleetAddCommand extends Command
             $filesystem->writeToEnvFile('APP_PORT', $port);
         } catch (\Exception $e) {
             $this->error($e->getMessage());
+
             return self::FAILURE;
         }
 
         // add a modified docker-compose.yml file to include traefik labels
         $file = base_path('docker-compose.backup.yml');
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             $file = base_path('docker-compose.yml');
         }
 
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             $this->error('A docker-compose.yml file or a docker-compose.backup.yml file does not exist');
 
             return self::FAILURE;
@@ -84,6 +85,7 @@ class FleetAddCommand extends Command
             } catch (\Exception $e) {
                 $this->error($e->getMessage());
                 $this->line('For more information, try checking out the documentation at mkcert.dev');
+
                 return self::FAILURE;
             }
 
@@ -91,6 +93,7 @@ class FleetAddCommand extends Command
                 $filesystem->createSslConfig($domain);
             } catch (\Exception $e) {
                 $this->error($e->getMessage());
+
                 return self::FAILURE;
             }
 

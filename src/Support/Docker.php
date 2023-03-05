@@ -3,7 +3,6 @@
 namespace Aschmelyun\Fleet\Support;
 
 use Aschmelyun\Fleet\Fleet;
-use Aschmelyun\Fleet\Support\Filesystem;
 
 class Docker
 {
@@ -43,7 +42,7 @@ class Docker
     public function startFleetTraefikContainer(): void
     {
         $homeDirectory = app(Filesystem::class)->getHomeDirectory();
-        
+
         Fleet::process(
             "docker run -d -p 8080:8080 -p 80:80 -p 443:443 --network=fleet -v /var/run/docker.sock:/var/run/docker.sock -v {$homeDirectory}/.config/mkcert:/etc/traefik --name=fleet traefik:v2.9 --api.insecure=true --providers.docker --entryPoints.web.address=:80 --entryPoints.websecure.address=:443 --providers.file.directory=/etc/traefik/conf --providers.file.watch=true",
             true

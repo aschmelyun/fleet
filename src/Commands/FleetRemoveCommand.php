@@ -15,14 +15,14 @@ class FleetRemoveCommand extends Command
     {
         // determine if fleet is installed, return a response if not
         $file = base_path('docker-compose.yml');
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             $this->error('A docker-compose.yml file does not exist');
 
             return self::FAILURE;
         }
 
         $yaml = Yaml::parseFile($file);
-        if (!isset($yaml['networks']['fleet'])) {
+        if (! isset($yaml['networks']['fleet'])) {
             $this->info(' Fleet is not currently installed on this application');
 
             return self::SUCCESS;
