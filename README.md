@@ -7,6 +7,12 @@ Easily run multiple Laravel Sail applications at the same time locally with cust
 
 > Note: This is still new and may contain bugs, if you see something weird please [create an issue](https://github.com/aschmelyun/fleet/issues/new)
 
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Local SSL](#local-ssl)
+- [Port Conflicts](#port-conflicts)
+- [Additional Usage](#additional-usage)
+
 ## Installation
 
 You can install the package via composer:
@@ -48,6 +54,28 @@ php artisan fleet:add my-app.localhost --ssl
 ```
 
 A local certificate will be generated and stored in `~/.config/mkcert/certs`. After spinning up your site with Sail, your specified domain will have https enabled.
+
+## Port Conflicts
+
+When spinning up multiple Laravel Sail appliactions, it's likely you'll encounter an error about port conflicts between Docker containers. This is because each service has a port mapped to your local machine, and by default, they're the same across your applications.
+
+In order to fix this, add different forwarded port numbers to each Laravel application using the `.env` file. For example:
+
+- App #1
+
+```env
+FORWARD_DB_PORT=3306
+FORWARD_REDIS_PORT=6379
+```
+
+- App #2
+
+```env
+FORWARD_DB_PORT=4306
+FORWARD_REDIS_PORT=7379
+```
+
+This way, both applications can be spun up using Fleet and Sail, and their respective services' ports won't conflict.
 
 ## Additional Usage
 
