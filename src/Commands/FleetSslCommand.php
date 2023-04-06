@@ -9,7 +9,8 @@ use Symfony\Component\Yaml\Yaml;
 class FleetSslCommand extends Command
 {
     public $signature = 'fleet:ssl
-                        {domain? : The test domain to use}';
+                        {domain? : The test domain to use}
+                        {--add : Add TLS labels to the docker-compose.yml file}';
 
     public $description = 'Adds SSL support for an existing Fleet installation';
 
@@ -47,7 +48,9 @@ class FleetSslCommand extends Command
             return self::FAILURE;
         }
 
-        $this->addTlsToDockerCompose($file, $domain);
+        if ($this->option('add')) {
+            $this->addTlsToDockerCompose($file, $domain);
+        }
 
         // return info back to the user
         $this->info(' ✨ All done! You can now run `./vendor/bin/sail up`');
