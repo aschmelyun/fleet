@@ -77,6 +77,20 @@ FORWARD_REDIS_PORT=7379
 
 This way, both applications can be spun up using Fleet and Sail, and their respective services' ports won't conflict.
 
+## Vite Port Conflicts
+
+As well as specifying a new `VITE_PORT` in your `.env` file, or editing it directly in `docker_compose.yaml`, it will also be necessary to specify the port for Vite to use in the `vite.config.js` file as follows:
+
+```
+export default defineConfig({
+    server: {
+        port: 5174
+    },
+    // other config
+});
+```
+
+
 ## Additional Usage
 
 By default, whenever you use `fleet:add`, a Docker network and container are both started to handle the traffic from your local domain name(s).
