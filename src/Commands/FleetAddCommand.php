@@ -131,6 +131,7 @@ class FleetAddCommand extends Command
         $yaml['services'][$heading]['labels'] = [
             "traefik.http.routers.{$heading}.rule=Host(`{$domain}`)",
             "traefik.http.services.{$heading}.loadbalancer.server.port=80",
+            "traefik.docker.network=fleet"
         ];
 
         // removes port binding for our app service
